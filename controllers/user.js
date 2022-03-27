@@ -12,7 +12,7 @@ module.exports.getUsers = (req, res) => {
 module.exports.getUserById = (req, res) => {
   User.findById(req.params.userId)
     .then((user) => {
-      if (user != null) {
+      if (user) {
         res.send({ user });
       } else {
         res.status(NOT_FOUND_CODE).send({ message: 'Пользователь не найден' });
@@ -42,9 +42,9 @@ module.exports.createUser = (req, res) => {
 
 module.exports.updateUserInfo = (req, res) => {
   const { name, about } = req.body;
-  User.findByIdAndUpdate(req.user._id, { name, about })
+  User.findByIdAndUpdate(req.user._id, { name, about }, { new: true, runValidators: true })
     .then((user) => {
-      if (user != null) {
+      if (user) {
         res.send({ user });
       } else {
         res.status(NOT_FOUND_CODE).send({ message: 'Пользователь не найден' });
@@ -61,9 +61,9 @@ module.exports.updateUserInfo = (req, res) => {
 
 module.exports.updateAvatar = (req, res) => {
   const { avatar } = req.body;
-  User.findByIdAndUpdate(req.user._id, { avatar })
+  User.findByIdAndUpdate(req.user._id, { avatar }, { new: true, runValidators: true })
     .then((user) => {
-      if (user != null) {
+      if (user) {
         res.send({ user });
       } else {
         res.status(NOT_FOUND_CODE).send({ message: 'Пользователь не найден' });
