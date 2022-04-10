@@ -1,5 +1,7 @@
+/* eslint-disable no-console */
 const validator = require('validator');
 const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 
 const User = require('../models/user');
 
@@ -12,6 +14,18 @@ module.exports.getUsers = (req, res) => {
     .then((users) => res.send({ users }))
     .catch(() => res.status(INTERNAL_SERVER_ERROR_CODE).send({ message: 'Произошла ошибка' }));
 };
+
+module.exports.getCurrentUserInfo = (req, res) => {
+  console.log(req.user);
+  User.findById(req.user._id)
+    .then((user) => {
+      res.send({ user });
+    })
+    .catch(() => {
+      res.status(INTERNAL_SERVER_ERROR_CODE).send({ message: 'Произошла ошибка' });
+    });
+};
+
 module.exports.getUserById = (req, res) => {
   User.findById(req.params.userId)
     .then((user) => {
@@ -35,7 +49,7 @@ module.exports.createUser = (req, res) => {
     email, password, name, about, avatar,
   } = req.body;
   if (validator.isEmail(email) !== true) {
-    res.status(BAD_REQUEST_CODE).send({ message: 'Переданы некорректные данные' });
+    res.status(BAD_REQUEST_CODE).send({ message: 'Некорректные почта или пароль' });
     return;
   }
   bcrypt.hash(password, 10)
@@ -87,5 +101,29 @@ module.exports.updateAvatar = (req, res) => {
       } else {
         res.status(INTERNAL_SERVER_ERROR_CODE).send({ message: 'Произошла ошибка' });
       }
+    });
+};
+
+module.exports.login = (req, res) => {
+  const { email, password } = req.body;
+  return User.findUserByCredentials(email, password)
+    .then((user) => {
+      const token = jwt.sign(
+        { _id: user._id },
+        'some-secret-key',
+        { expiresIn: '7d' },
+      );
+      res
+        .cookie('jwt', token, {
+          maxAge: 3600000,
+          httpOnly: true,
+          sameSite: true,
+        })
+        .end();
+    })
+    .catch((err) => {
+      res
+        .status(401)
+        .send({ message: err.message });
     });
 };
