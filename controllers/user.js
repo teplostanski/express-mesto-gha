@@ -1,4 +1,3 @@
-const validator = require('validator');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
@@ -42,26 +41,21 @@ module.exports.getUserById = (req, res, next) => {
 
 module.exports.createUser = (req, res, next) => {
   const {
-    email, password, name, about, avatar,
+    name, about, avatar, email, password,
   } = req.body;
-  if (validator.isEmail(email) !== true) {
-    next(new BadRequestError('Некорректная почта'));
-    return;
-  }
-  bcrypt.hash(password, 10)
-    .then((hash) => User.create({
-      email, password: hash, name, about, avatar,
-    })
-      .then((user) => res.status(201).send({ user })))
-    .catch((err) => {
-      if (err.name === 'ValidationError') {
-        next(new BadRequestError('Переданы некорректные данные'));
-      } else if (err.name === 'MongoServerError' && err.code === 11000) {
-        next(new ConflictError('Такой пользователь уже зарегистрирован'));
-      } else {
-        next(new InternalError());
+  User.findOne({ email })
+    .then((user) => {
+      if (user) {
+        throw new ConflictError(`Пользователь с таким email: ${email} уже зарегестрирован`);
       }
-    });
+      return bcrypt.hash(password, 10);
+    })
+    .then((hash) => User.create({
+      name, about, avatar, email, password: hash,
+    }))
+    .then((user) => User.findOne({ _id: user._id }))
+    .then((user) => res.send(user))
+    .catch(next);
 };
 
 module.exports.updateUserInfo = (req, res, next) => {
@@ -108,7 +102,7 @@ module.exports.login = (req, res, next) => {
     .then((user) => {
       const token = jwt.sign(
         { _id: user._id },
-        'tut-budet-secret',
+        'some-secret-key', // Из описания проектной работы: Обратите внимание: в коде нет env-файла. Мы добавим его в следующей части работы, когда загрузим проект на сервер. Секретный ключ для разработки можно хранить в коде, это не страшно.
         { expiresIn: '7d' },
       );
       res
