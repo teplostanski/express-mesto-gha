@@ -24,27 +24,23 @@ module.exports.createCard = (req, res, next) => {
 
 module.exports.deleteCard = (req, res, next) => {
   Card.findById(req.params.cardId)
-    .then((card) => {
+    .then((card) => { //
       if (!card) {
-        next(new NotFoundError('Карточка не найдена'));
+        throw new NotFoundError('Карточка с таким _id не найдена');
       }
-      if (card.owner._id.toString() === req.user._id) {
-        Card.findByIdAndRemove(card.id)
-          .then((result) => {
-            if (result) {
-              res.send({ result });
-            }
+      if (String(card.owner) === req.user._id) {
+        Card.findByIdAndRemove(req.params.id)
+          .then(() => { //
+            res.send({ message: 'Карточка удалена' });
           });
       } else {
-        next(new ForbiddenError('Нельзя удалить чужую карточку'));
+        throw new ForbiddenError('Нельзя удалить чужую карточку');
       }
     })
     .catch((err) => {
       if (err.name === 'CastError') {
         next(new BadRequestError('Переданы некорректные данные'));
-      } else {
-        next(new InternalError());
-      }
+      } else { next(err); }
     });
 };
 
