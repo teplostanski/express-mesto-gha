@@ -25,13 +25,14 @@ module.exports.createCard = (req, res, next) => {
 module.exports.deleteCard = (req, res, next) => {
   Card.findById(req.params.cardId)
     .then((card) => {
+      if (!card) {
+        next(new NotFoundError('Карточка не найдена'));
+      }
       if (card.owner._id.toString() === req.user._id) {
         Card.findByIdAndRemove(card.id)
           .then((result) => {
             if (result) {
               res.send({ result });
-            } else {
-              next(new NotFoundError('Карточка не найдена'));
             }
           });
       } else {
