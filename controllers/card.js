@@ -29,7 +29,7 @@ module.exports.deleteCard = (req, res, next) => {
         throw new NotFoundError('Карточка с таким _id не найдена');
       }
       if (String(card.owner) === req.user._id) {
-        Card.findByIdAndRemove(card.id)
+        Card.findByIdAndRemove(card._id)
           .then(() => { //
             res.send({ message: 'Карточка удалена' });
           });
