@@ -15,7 +15,7 @@ const { requestLogger, errorLogger } = require('./middlewares/logger');
 const app = express();
 
 app.use(cors({
-  origin: ['https://w98.link'],
+  origin: ['https://w98.link', 'http://w98.link'],
   allowedHeaders: ['Access-Control-Allow-Credentials', 'Access-Control-Allow-Origin', 'Content-Type'],
   methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE'],
   credentials: true,
@@ -39,7 +39,7 @@ app.post(
     body: Joi.object().keys({
       email: Joi.string().email().required(),
       password: Joi.string().min(8).required(),
-    }).unknown(true),
+    }),
   }),
   login,
 );
@@ -52,7 +52,7 @@ app.post(
       name: Joi.string().min(2).max(30),
       about: Joi.string().min(2).max(30),
       avatar: Joi.string().pattern(regExp),
-    }).unknown(true),
+    }),
   }),
   createUser,
 );
