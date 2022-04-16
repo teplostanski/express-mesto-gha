@@ -6,7 +6,8 @@ const InternalError = require('../errors/internal-err');
 const NotFoundError = require('../errors/not-found-err');
 const BadRequestError = require('../errors/bad-request-err');
 const ConflictError = require('../errors/conflict-err');
-const { FRONTEND_DOMAIN } = require('../config');
+
+const { NODE_ENV, JWT_SECRET } = process.env;
 
 module.exports.getUsers = (req, res, next) => {
   User.find({})
@@ -105,12 +106,12 @@ module.exports.login = (req, res, next) => {
     .then((user) => {
       const token = jwt.sign(
         { _id: user._id },
-        'some-secret-key',
+        NODE_ENV === 'production' ? JWT_SECRET : 'dev-secret',
         { expiresIn: '7d' },
       );
       res
         .cookie('jwt', token, {
-          domain: `.${FRONTEND_DOMAIN}`,
+          domain: '.w98.link',
           maxAge: week,
           httpOnly: false,
           sameSite: false,
