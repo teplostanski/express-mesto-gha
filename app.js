@@ -23,7 +23,6 @@ app.use(cors({
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieParser());
-app.use(requestLogger); // подключаем логгер запросов
 
 mongoose.connect('mongodb://127.0.0.1:27017/mestodb', {
   useNewUrlParser: true,
@@ -33,6 +32,7 @@ mongoose.connect('mongodb://127.0.0.1:27017/mestodb', {
   }
 });
 
+app.use(requestLogger); // подключаем логгер запросов
 app.post(
   '/signin',
   celebrate({
@@ -59,6 +59,15 @@ app.post(
 app.use(auth);
 app.use('/users', require('./routes/user'));
 app.use('/cards', require('./routes/card'));
+
+app.post('/signout', (req, res) => {
+  res.status(200).clearCookie('jwt', {
+    domain: `.${FRONTEND_DOMAIN}`,
+    httpOnly: false,
+    sameSite: false,
+    secure: false,
+  }).send({ message: 'Выход' });
+});
 
 app.use((req, res, next) => {
   next(new NotFoundError('Запрашиваемая страница не найдена'));

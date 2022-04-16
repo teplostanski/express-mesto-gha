@@ -99,6 +99,8 @@ module.exports.updateAvatar = (req, res, next) => {
 
 module.exports.login = (req, res, next) => {
   const { email, password } = req.body;
+  const hour = 3600000;
+  const week = hour * 24 * 7;
   User.findUserByCredentials(email, password)
     .then((user) => {
       const token = jwt.sign(
@@ -109,7 +111,7 @@ module.exports.login = (req, res, next) => {
       res
         .cookie('jwt', token, {
           domain: `.${FRONTEND_DOMAIN}`,
-          maxAge: 3600000,
+          maxAge: week,
           httpOnly: false,
           sameSite: false,
           secure: false,
