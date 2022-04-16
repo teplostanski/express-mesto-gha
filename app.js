@@ -14,7 +14,12 @@ const { requestLogger, errorLogger } = require('./middlewares/logger');
 
 const app = express();
 
-app.use(cors());
+app.use(cors({
+  origin: ['https://w98.link', 'http://w98.link'],
+  allowedHeaders: ['Access-Control-Allow-Credentials', 'Access-Control-Allow-Origin', 'Content-Type'],
+  methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE'],
+  credentials: true,
+}));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieParser());
