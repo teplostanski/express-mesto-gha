@@ -84,10 +84,10 @@ app.use(errorLogger); // логгер ошибок
 
 app.use(errors());
 
-// eslint-disable-next-line no-unused-vars
 app.use((err, req, res, next) => {
   res.status(err.statusCode || 500);
   res.send({ message: err.message || 'Неизвестная ошибка' });
+  next();
 });
 
 app.listen(3000, () => {
